@@ -1,0 +1,72 @@
+from selenium import webdriver
+import time
+from selenium.webdriver.common.keys import Keys
+import os
+from multiprocessing import Pool
+
+chromedriver = r"D:\ChromDownload\chromedriver_win32 (1)\chromedriver.exe"
+url_file = r"D:\software\pyproj\.vscode\spider\gens.txt"
+
+
+def get_file(url):
+    if url == False:
+        return 
+    url = url + "?ssmsTable_size=20"
+    os.environ["webdriver.chrome.driver"] = chromedriver
+    driver = webdriver.Chrome(executable_path=chromedriver)
+
+    driver.get(url)
+    time.sleep(2)
+    button = driver.find_element_by_class_name("css-4byr23")
+    button.click()
+    time.sleep(2)
+    downLoad = driver.find_element_by_class_name("css-1a92y13")
+    downLoad.click()
+    time.sleep(5)
+    print(url + "---> has been download successfully.")
+    driver.quit()
+    
+class get_url:
+    def __init__(self,path):
+        self.path = path
+        buffer = open(self.path,"r").readlines()
+        self.urls = [i.strip() for i in buffer]
+        print(self.urls )        
+        self.index = 0
+        self.cnt = len(self.urls)        
+    def get_url(self):
+        if self.index >= self.cnt:
+            print("None url")
+            return False
+        url = self.urls[self.index]
+        self.index += 1
+        return url
+
+def merge_file():
+    import numpy as np
+    from glob import glob
+    import pandas as pd
+
+    path = r"C:\Users\l00520372\Downloads\*.tsv"
+    opath = r"C:\Users\l00520372\Downloads\res.xls"
+
+    fns = glob(path)
+    dfs = []
+    for fn in fns:
+        df = pd.read_table(fns[0])
+        dfs.append(df)
+    df_merge = pd.concat(dfs)
+    df_merge.to_excel(opath)    
+
+if __name__ == "__main__":
+    # for xx in range(urls.cnt):
+    #     get_file(urls.get_url())
+    urls = get_url(url_file)
+    pool = Pool(processes=3)
+    for i in range(9):
+        pool.apply_async(get_file,args=(urls.get_url(),))
+    pool.close()
+    pool.join()
+
+    merge_file()
+
